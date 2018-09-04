@@ -30,6 +30,7 @@ void setup() {
   pinMode(output1, OUTPUT); //출력을 변수 output1로 설정
   pinMode(output4, OUTPUT); //비프음 출력변수 output4로 설정
   Serial.begin(9600); // 시리얼통신 baudrate 설정
+  Serial.println("Enter Command : 1(start),2(stop),3(ackowledge)");
 }
 
 void loop() {
@@ -44,25 +45,29 @@ void loop() {
   if(Serial.available() > 0){ // serial 통신이 가능하다면 통신시작
     beep_feedback = HIGH; // command가 들어오면 beep 한번 삑 
     comm = Serial.read(); // serial로 읽어온 값을 comm에 저장
-    Serial.write(comm); // putty창 표시용
-    if( comm == 1){
+    if( comm == '1'){
       var4 = HIGH;
     }
-    else if( comm == 2){
+    else if( comm == '2'){
       var5 = HIGH;
     }
-    else if( comm == 3){
+    else if( comm == '3'){
       var6 = HIGH;
     }
-    delay(1000);
+    Serial.write(comm); // putty창 표시용
+    delay(100);
   }
   //Serial 통신으로 data 읽기. 끝.
     
   // 스위치입력과 통신입력 oring
-  comm_start = var1 || var4;
-  comm_stop = var2 || var5;
-  comm_ack = var3 || var6;
-  
+  comm_start = var1 | var4;
+  comm_stop = var2 | var5;
+  comm_ack = var3 | var6;
+
+  // 다시 통신으로 받은 DATA를 0으로 초기화
+  var4 = LOW;
+  var5 = LOW;
+  var6 = LOW; 
 
   
   //---SR LATCH---
