@@ -14,11 +14,13 @@ const int output1 = 8; // 제어신호 출력단자
 const int output2 = 9; // START feedback 신호
 const int output3 = 10; // STOP feedback 신호
 const int output4 = 11; // 제어신호 feedback beep음 출력단자 
+const int analog_input1 = 0; // analog0 pin값을 analog_input1에 저장
+
+int comm = 0; // 통신으로 수신하는 제어명령! 1 START/2 STOP/3 ACK
+int feed = 0; // 통신으로 올려보낼 기기상태 정보! 1 STARTED/2 STOPPED /3 TRBL/4 DSBL
 boolean var1 = LOW; // 스위치 start 변수
 boolean var2 = LOW; // 스위치 stop 변수
 boolean var3 = LOW; // 스위치 ACK 변수
-int comm = 0; // 통신으로 수신하는 제어명령! 1 START/2 STOP/3 ACK
-int feed = 0; // 통신으로 올려보낼 기기상태 정보! 1 STARTED/2 STOPPED /3 TRBL/4 DSBL
 boolean var4 = LOW; // 시리얼 start 변수 
 boolean var5 = LOW; // 시리얼 stop 변수
 boolean var6 = LOW; // 시리얼 ack 변수
@@ -27,6 +29,8 @@ boolean comm_stop = LOW; // STOP 최종신호
 boolean comm_ack = LOW; // ack 최종신호
 boolean aux_start = LOW; // Aux Start
 boolean aux_stop = LOW; // Aux Stop 
+
+int ai1 = 0; // analog input을 담을 변수
  
 boolean sr_q = LOW; // SR래치에 사용하는 변수
 boolean beep_feedback = LOW;
@@ -43,7 +47,9 @@ void setup() {
   pinMode(output4, OUTPUT); //비프음 출력변수 output4로 설정
   Serial.begin(9600); // 시리얼통신 baudrate 설정
   Serial.println("Enter Command : 1(start),2(stop),3(ackowledge)");
+  Serial.println("조도값 읽는중....");
 }
+
 
 void loop() {
   //Hardwired handsiwtch 읽기
@@ -66,9 +72,18 @@ void loop() {
     else if( comm == '3'){
       var6 = HIGH;
     }
-    Serial.write(comm); // putty창 표시용
     delay(100);
   }
+  
+  // 시리얼통신 지시부 사실 이 부분은 시리얼로 받아가는 놈이 실시간으로 받아가서, 일정주기로 지시하면 됨.
+  // 시리얼통신에 패킷개념 도입해야함. 상위 bit는 0000은 디지털제어값, 하위 bit는 아날로그값! serial통신은 한방에 하나밖에 못보냄.
+    //Serial.println("입력한 값은 : ");
+    //Serial.println(comm); // putty창 표시용
+    Serial.write(comm); // putty창 표시용
+    //Serial.println("조도값은 : ");
+    //Serial.println(ai1);
+    Serial.write(ai1); // 
+    delay(100);
 
   // 스위치입력과 통신입력 oring
   comm_start = var1 | var4;
@@ -93,6 +108,10 @@ void loop() {
   }
   //---SR LATCH.끝---
 
+  // DO 출력신호
   digitalWrite(output1, sr_q);
   digitalWrite(output4, beep_feedback);
+
+  // AI 입력신호
+  ai1= analogRead(analog_input1); // ai값을 받아와서 ai1에 저장
 }
